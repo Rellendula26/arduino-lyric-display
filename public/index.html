@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arduino Lyric Display</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Arduino Lyric Display</h1>
+        <p class="subtitle">
+          Search a song, fetch a chorus snippet, format for 16×2 LCD, export
+          Arduino sketch.
+        </p>
+        <div id="status" class="status"></div>
+      </header>
+
+      <section class="panel">
+        <h2>1. Search song</h2>
+        <form id="search-form" class="search-row">
+          <input
+            id="search-input"
+            type="search"
+            placeholder="Song or artist name…"
+            autocomplete="off"
+            required
+          />
+          <button type="submit">Search</button>
+        </form>
+        <ul id="results" class="results"></ul>
+      </section>
+
+      <section class="panel" id="selected-panel" hidden>
+        <h2>2. Selected track</h2>
+        <div id="selected-track" class="selected-track"></div>
+
+        <label class="field">
+          <span>Manual lyrics (optional fallback)</span>
+          <textarea
+            id="manual-lyrics"
+            rows="6"
+            placeholder="Paste chorus lyrics here if auto-fetch fails…"
+          ></textarea>
+        </label>
+
+        <div class="options-row">
+          <label class="field compact">
+            <span>Fallback seconds (no LRC)</span>
+            <input id="hold-ms" type="number" value="3" min="1" max="15" step="0.5" />
+          </label>
+          <label class="field compact">
+            <span>Max LCD pages</span>
+            <input id="max-pages" type="number" value="6" min="1" max="12" />
+          </label>
+        </div>
+
+        <button id="generate-btn" class="primary">Generate Arduino code</button>
+      </section>
+
+      <section class="panel" id="output-panel" hidden>
+        <h2>3. LCD preview &amp; sketch</h2>
+        <p id="lyric-note" class="note"></p>
+        <div id="lcd-preview" class="lcd-grid"></div>
+        <div class="code-actions">
+          <button id="copy-btn">Copy sketch</button>
+          <button id="download-btn">Download .ino</button>
+        </div>
+        <pre id="sketch-output" class="sketch"></pre>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
