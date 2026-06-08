@@ -9,6 +9,7 @@ const holdMsEl = document.getElementById("hold-ms");
 const maxPagesEl = document.getElementById("max-pages");
 const generateBtn = document.getElementById("generate-btn");
 const outputPanel = document.getElementById("output-panel");
+const chorusStartEl = document.getElementById("chorus-start");
 const lyricNoteEl = document.getElementById("lyric-note");
 const lcdPreviewEl = document.getElementById("lcd-preview");
 const sketchOutputEl = document.getElementById("sketch-output");
@@ -139,6 +140,7 @@ generateBtn.addEventListener("click", async () => {
       body: JSON.stringify({
         title: selectedTrack.name,
         artist: selectedTrack.artist,
+        spotifyTrackId: selectedTrack.id,
         manualLyrics: manualLyricsEl.value,
         holdMs: Math.round((Number(holdMsEl.value) || 3) * 1000),
         maxPages: Number(maxPagesEl.value) || 6,
@@ -147,6 +149,22 @@ generateBtn.addEventListener("click", async () => {
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Generate failed");
+
+    if (data.chorusStart?.label) {
+      chorusStartEl.hidden = false;
+      chorusStartEl.innerHTML = `
+        <div class="chorus-start-label">Chorus starts at</div>
+        <div class="chorus-start-time">${escapeHtml(data.chorusStart.label)}</div>
+        <div class="chorus-start-line">"${escapeHtml(data.chorusStart.openingLine)}"</div>
+        ${
+          data.spotifyUrl
+            ? `<a class="chorus-start-link" href="${escapeHtml(data.spotifyUrl)}" target="_blank" rel="noopener">Open in Spotify at this timestamp →</a>`
+            : `<span class="chorus-start-hint">Seek to ${escapeHtml(data.chorusStart.label)} in your player</span>`
+        }
+      `;
+    } else {
+      chorusStartEl.hidden = true;
+    }
 
     lyricNoteEl.textContent = `${data.lyrics.source}: ${data.lyrics.note}`;
     renderLcdPreview(data.pages);

@@ -204,6 +204,52 @@ button.primary {
   font-size: 0.9rem;
 }
 
+.chorus-start {
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--accent-dim);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #101820, #0f1a16);
+}
+
+.chorus-start-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.chorus-start-time {
+  margin-top: 0.2rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+}
+
+.chorus-start-line {
+  margin-top: 0.35rem;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.chorus-start-link,
+.chorus-start-hint {
+  display: inline-block;
+  margin-top: 0.65rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.chorus-start-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.chorus-start-link:hover {
+  text-decoration: underline;
+}
+
 .sync-hint {
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--accent-dim);

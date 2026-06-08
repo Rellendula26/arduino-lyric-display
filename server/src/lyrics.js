@@ -113,8 +113,34 @@ export function parseSyncedTimedLines(synced) {
 
 /** Extract chorus/hook lines; attach LRC timestamps when available. */
 export function extractTimedSnippet(plain, synced, maxLines = 8) {
-  const timedLines = synced ? parseSyncedTimedLines(synced) : [];
-  return pickChorusExcerpt({ timedLines, plain, maxLines });
+  const fullTimedLines = synced ? parseSyncedTimedLines(synced) : [];
+  const excerpt = pickChorusExcerpt({ timedLines: fullTimedLines, plain, maxLines });
+  return {
+    ...excerpt,
+    timedLines: enrichWithNextStartMs(excerpt.timedLines, fullTimedLines),
+  };
+}
+
+/** Look up the next LRC timestamp from the full song, not just the excerpt. */
+export function enrichWithNextStartMs(excerptLines, fullTimeline) {
+  if (!fullTimeline.length) return excerptLines;
+
+  return excerptLines.map((line) => {
+    if (line.startMs == null) return line;
+
+    const idx = fullTimeline.findIndex(
+      (entry) => entry.startMs === line.startMs && entry.text === line.text
+    );
+
+    const next =
+      idx >= 0
+        ? fullTimeline.slice(idx + 1).find((entry) => entry.startMs != null)
+        : fullTimeline.find(
+            (entry) => entry.startMs != null && entry.startMs > line.startMs
+          );
+
+    return { ...line, nextStartMs: next?.startMs ?? null };
+  });
 }
 
 export async function fetchLyrics({ title, artist, manualText }) {

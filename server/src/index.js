@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { searchTracks } from "./spotify.js";
 import { fetchLyrics } from "./lyrics.js";
-import { formatLyricsForLcd } from "./formatter.js";
+import { formatLyricsForLcd, getChorusStart } from "./formatter.js";
 import { generateArduinoSketch } from "./codegen.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,8 +41,14 @@ app.get("/api/search", async (req, res) => {
 
 app.post("/api/generate", async (req, res) => {
   try {
-    const { title, artist, manualLyrics, holdMs = 3000, maxPages = 6 } =
-      req.body ?? {};
+    const {
+      title,
+      artist,
+      manualLyrics,
+      holdMs = 3000,
+      maxPages = 6,
+      spotifyTrackId,
+    } = req.body ?? {};
 
     if (!title?.trim()) {
       return res.status(400).json({ error: "title is required." });
@@ -54,24 +60,35 @@ app.post("/api/generate", async (req, res) => {
       manualText: manualLyrics,
     });
 
-    const { pages, hasTiming, leadInMs } = formatLyricsForLcd(
+    const { pages, hasTiming } = formatLyricsForLcd(
       lyricResult.timedLines,
       maxPages,
       holdMs
     );
+    const chorusStart = getChorusStart(lyricResult.timedLines);
+    const timingAvailable = hasTiming && lyricResult.hasTiming;
+
     const sketch = generateArduinoSketch({
       songTitle: title.trim(),
       artist: (artist ?? "").trim(),
       pages,
       defaultHoldMs: holdMs,
-      hasTiming: hasTiming && lyricResult.hasTiming,
+      hasTiming: timingAvailable,
+      chorusStart,
     });
+
+    const spotifyUrl =
+      spotifyTrackId && chorusStart.seconds != null
+        ? `https://open.spotify.com/track/${spotifyTrackId}?t=${chorusStart.seconds}`
+        : null;
 
     res.json({
       song: { title: title.trim(), artist: (artist ?? "").trim() },
       lyrics: lyricResult,
       pages,
-      hasTiming: hasTiming && lyricResult.hasTiming,
+      hasTiming: timingAvailable,
+      chorusStart,
+      spotifyUrl,
       sketch,
     });
   } catch (error) {

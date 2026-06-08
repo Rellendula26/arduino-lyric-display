@@ -86,6 +86,8 @@ Lyric lyrics[] = {
 
 Set **Seconds per page** in the web UI to control scroll speed (default 3s).
 
+After generating, the UI shows **when the chorus starts** in the song (from LRC timestamps), with an **Open in Spotify** link that jumps to that moment when possible.
+
 ## API
 
 | Endpoint | Method | Description |

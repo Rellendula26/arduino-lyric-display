@@ -53,6 +53,29 @@ function clampHold(ms) {
   return Math.min(Math.max(ms, MIN_HOLD_MS), MAX_HOLD_MS);
 }
 
+export function formatTimestamp(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  const centisec = Math.floor((ms % 1000) / 10);
+  return `${min}:${String(sec).padStart(2, "0")}.${String(centisec).padStart(2, "0")}`;
+}
+
+/** When the first excerpt lyric is sung — seek the song here. */
+export function getChorusStart(timedLines) {
+  const first = timedLines.find((line) => line.startMs != null);
+  if (!first) {
+    return { ms: null, label: null, seconds: null, openingLine: null };
+  }
+
+  return {
+    ms: first.startMs,
+    label: formatTimestamp(first.startMs),
+    seconds: Math.floor(first.startMs / 1000),
+    openingLine: first.text,
+  };
+}
+
 /**
  * Build LCD pages with holdMs from LRC gaps — time until the next lyric line starts.
  * Pages from the same sung line split that gap evenly.
@@ -64,7 +87,7 @@ export function formatLyricsForLcd(timedLines, maxPages = 6, defaultHoldMs = 300
   for (let lineIndex = 0; lineIndex < timedLines.length; lineIndex++) {
     if (pages.length >= maxPages) break;
 
-    const { text, startMs } = timedLines[lineIndex];
+    const { text, startMs, nextStartMs } = timedLines[lineIndex];
     const chunks = wrapLine(text);
     if (!chunks.length) continue;
 
@@ -79,12 +102,15 @@ export function formatLyricsForLcd(timedLines, maxPages = 6, defaultHoldMs = 300
 
     let totalMs = defaultHoldMs * linePages.length;
     if (hasTiming && startMs != null) {
-      const nextLine = timedLines
-        .slice(lineIndex + 1)
-        .find((line) => line.startMs != null);
+      const nextStart =
+        nextStartMs ??
+        timedLines
+          .slice(lineIndex + 1)
+          .find((line) => line.startMs != null)?.startMs;
+
       totalMs =
-        nextLine != null
-          ? nextLine.startMs - startMs
+        nextStart != null
+          ? nextStart - startMs
           : defaultHoldMs * linePages.length;
       totalMs = Math.max(totalMs, MIN_HOLD_MS * linePages.length);
     }
